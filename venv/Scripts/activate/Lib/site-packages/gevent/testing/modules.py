@@ -26,7 +26,11 @@ import warnings
 import gevent
 
 from . import sysinfo
-from . import util
+# Avoid importing this at the top level because
+# it imports threading and subprocess, and this module
+# is always imported in our monkey-patched stdlib unittests,
+# and some of them don't like it when those are imported.
+# from . import util
 
 
 OPTIONAL_MODULES = frozenset({
@@ -74,7 +78,7 @@ def walk_modules(
        for an `ImportError`; the caller can examine *optional_modules* against
        the yielded *importable_module_name*.
     """
-    # pylint:disable=too-many-branches
+    # pylint:disable=too-many-branches,too-many-locals
     if sysinfo.PYPY:
         include_so = False
     if basedir is None:
@@ -120,6 +124,7 @@ def walk_modules(
                         warnings.simplefilter('ignore', DeprecationWarning)
                         importlib.import_module(modname)
                 except ImportError:
+                    from . import util
                     util.debug("Unable to import optional module %s", modname)
                     continue
             yield path, modname

@@ -378,14 +378,8 @@ class Greenlet(greenlet):
         hub = get_my_hub(self) # pylint:disable=undefined-variable
         return hub.loop
 
-    def __nonzero__(self): # pylint:disable=bad-dunder-name
+    def __bool__(self):
         return self._start_event is not None and self._exc_info is None
-    try:
-        __bool__ = __nonzero__ # Python 3
-    except NameError: # pragma: no cover
-        # When we're compiled with Cython, the __nonzero__ function
-        # goes directly into the slot and can't be accessed by name.
-        pass
 
     ### Lifecycle
 
@@ -486,8 +480,6 @@ class Greenlet(greenlet):
                 args = (GreenletExit, GreenletExit(), None)
             if not issubclass(args[0], BaseException):
                 # Random non-type, non-exception arguments.
-                print("RANDOM CRAP", args)
-                import traceback; traceback.print_stack()
                 args = (BaseException, BaseException(args), None)
             assert issubclass(args[0], BaseException)
             self.__report_error(args)

@@ -127,6 +127,9 @@ def notify_and_call_entry_points(event):
         __traceback_info__ = ep_dict
         # On Python 3.8, we can get duplicate EntryPoint objects; it is unclear
         # why. Drop them into a set to make sure we only get one.
+        #
+        # Running a more recent pylint flags the non-existence of ``get``
+        # pylint:disable=no-member
         entry_points = set(
             ep
             for ep
@@ -169,9 +172,13 @@ class IPeriodicMonitorThreadStartedEvent(Interface):
 
     monitor = Attribute("The instance of `IPeriodicMonitorThread` that was started.")
 
+@implementer(IPeriodicMonitorThreadStartedEvent)
 class PeriodicMonitorThreadStartedEvent(object):
     """
     The implementation of :class:`IPeriodicMonitorThreadStartedEvent`.
+
+    .. versionchanged:: 24.11.1
+       Now actually implements the promised interface.
     """
 
     #: The name of the setuptools entry point that is called when this
@@ -186,11 +193,15 @@ class IEventLoopBlocked(Interface):
     The event emitted when the event loop is blocked.
 
     This event is emitted in the monitor thread.
+
+    .. versionchanged:: 24.11.1
+       Add the *hub* attribute.
     """
 
     greenlet = Attribute("The greenlet that appeared to be blocking the loop.")
     blocking_time = Attribute("The approximate time in seconds the loop has been blocked.")
-    info = Attribute("A sequence of string lines providing extra info.")
+    info = Attribute("A list of string lines providing extra info. You may modify this list.")
+    hub = Attribute("""If not None, the hub being blocked.""")
 
 @implementer(IEventLoopBlocked)
 class EventLoopBlocked(object):
@@ -200,10 +211,11 @@ class EventLoopBlocked(object):
     Implements `IEventLoopBlocked`.
     """
 
-    def __init__(self, greenlet, blocking_time, info):
+    def __init__(self, greenlet, blocking_time, info, *, hub=None):
         self.greenlet = greenlet
         self.blocking_time = blocking_time
         self.info = info
+        self.hub = hub
 
 class IMemoryUsageThresholdExceeded(Interface):
     """

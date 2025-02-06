@@ -54,6 +54,7 @@ NO_ALL = {
     'gevent._util',
     'gevent.resolver._addresses',
     'gevent.resolver._hostsfile',
+    # gevent.monkey is handled specially.
 }
 
 ALLOW_IMPLEMENTS = [
@@ -138,7 +139,11 @@ class AbstractTestMixin(object):
 
     def skipIfNoAll(self):
         if not hasattr(self.module, '__all__'):
-            self.assertIn(self.modname, NO_ALL)
+            self.assertTrue(
+                self.modname in NO_ALL or self.modname.startswith('gevent.monkey.'),
+                "Module has no all"
+            )
+
             self.skipTest("%s Needs __all__" % self.modname)
 
     def test_all(self):
@@ -172,6 +177,13 @@ class AbstractTestMixin(object):
                              sorted(self.module.__all__))
         except AssertionError:
             self.skipTest("Module %s fails the all formula; fix it" % self.modname)
+        except TypeError:
+            # TypeError: '<' not supported between instances of 'type' and 'str'
+            raise AssertionError(
+                "Unable to sort %r from all %s in %s" % (
+                    all_calculated, self.module.__all__, self.module
+                )
+            )
 
     def test_implements_presence_justified(self):
         # Check that __implements__ is present only if the module is modeled
@@ -228,8 +240,18 @@ class AbstractTestMixin(object):
         if self.modname in EXTRA_EXTENSIONS:
             return
         for name in self.__extensions__:
-            if hasattr(self.stdlib_module, name):
-                raise AssertionError("'%r' is not an extension, it is found in %r" % (name, self.stdlib_module))
+            try:
+                if hasattr(self.stdlib_module, name):
+                    raise AssertionError("'%r' is not an extension, it is found in %r" % (
+                        name, self.stdlib_module
+                    ))
+            except TypeError as ex:
+                # TypeError: attribute name must be string, not 'type'
+                raise AssertionError(
+                    "Got TypeError (%r) getting %r (of %s) from %s/%s" % (
+                        ex, name, self.__extensions__, self.stdlib_module, self.modname
+                    )
+                )
 
     @skip_if_no_stdlib_counterpart
     def test_completeness(self): # pylint:disable=too-many-branches
@@ -280,6 +302,10 @@ def _create_tests():
     for _, modname in modules.walk_modules(include_so=False, recursive=True,
                                            check_optional=False):
         if modname.endswith(PLATFORM_SPECIFIC_SUFFIXES):
+            continue
+        if modname.endswith('__main__'):
+            # gevent.monkey.__main__ especially is a problem.
+            # These aren't meant to be imported anyway.
             continue
 
         orig_modname = modname

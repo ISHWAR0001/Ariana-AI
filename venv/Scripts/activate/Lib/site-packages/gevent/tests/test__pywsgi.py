@@ -18,8 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 # pylint: disable=too-many-lines,unused-argument,too-many-ancestors
-from __future__ import print_function
-
 from gevent import monkey
 
 monkey.patch_all()
@@ -629,8 +627,7 @@ class TestChunkedApp(TestCase):
     def application(self, env, start_response):
         self.assertTrue(env.get('wsgi.input_terminated'))
         start_response('200 OK', [('Content-Type', 'text/plain')])
-        for chunk in self.chunks:
-            yield chunk
+        yield from self.chunks
 
     def test_chunked_response(self):
         with self.makefile() as fd:
@@ -1034,7 +1031,7 @@ class HttpsTestCase(TestCase):
     def urlopen(self, method='GET', post_body=None, **kwargs): # pylint:disable=arguments-differ
         import ssl
         with self.connect() as raw_sock:
-            with ssl.wrap_socket(raw_sock) as sock: # pylint:disable=deprecated-method
+            with ssl.wrap_socket(raw_sock) as sock: # pylint:disable=deprecated-method,no-member
                 with sock.makefile(bufsize=1) as fd: # pylint:disable=unexpected-keyword-arg
                     fd.write('%s / HTTP/1.1\r\nHost: localhost\r\n' % method)
                     if post_body is not None:

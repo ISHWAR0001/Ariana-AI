@@ -22,12 +22,13 @@ Implementation of the standard :mod:`threading` using greenlets.
    threading; threading.current_thread()`` will no longer return a DummyThread
    before monkey-patching.
 """
-from __future__ import absolute_import
 
+
+import os
+import sys
 
 __implements__ = [
     'local',
-    '_start_new_thread', # Gone in 3.13; now start_joinable_thread
     '_allocate_lock',
     'Lock',
     '_get_ident',
@@ -38,17 +39,29 @@ __implements__ = [
     # threading module, but we really just need it here when some
     # things import this module.
     #'RLock',
+] + ([
+    '_start_new_thread',
+] if sys.version_info[:2] < (3, 13) else [
+    '_start_joinable_thread',
+    '_ThreadHandle',
+    '_make_thread_handle',
+])
+
+
+__extensions__ = [
 ]
 
 
 import threading as __threading__ # imports os, sys, _thread, functools, time, itertools
 _DummyThread_ = __threading__._DummyThread
 _MainThread_ = __threading__._MainThread
-import os
-import sys
+
 
 from gevent.local import local
 from gevent.thread import start_new_thread as _start_new_thread
+from gevent.thread import start_joinable_thread
+from gevent.thread import _ThreadHandle
+from gevent.thread import _make_thread_handle
 from gevent.thread import allocate_lock as _allocate_lock
 from gevent.thread import get_ident as _get_ident
 from gevent.hub import sleep as _sleep, getcurrent
@@ -61,6 +74,9 @@ from gevent._util import LazyOnClass
 # XXX: Why don't we use __all__?
 local = local
 start_new_thread = _start_new_thread
+_start_joinable_thread = start_joinable_thread
+_make_thread_handle = _make_thread_handle
+_ThreadHandle = _ThreadHandle
 allocate_lock = _allocate_lock
 _get_ident = _get_ident
 _sleep = _sleep
@@ -137,6 +153,11 @@ class _DummyThread(_DummyThread_):
         # All dummy threads in the same native thread share the same ident
         # (that of the native thread), unless we're monkey-patched.
         self._set_ident()
+        # _handle is only needed for 3.13; keeps a weak reference
+        # to the greenlet.
+        self._handle = _make_thread_handle(self._ident)
+        # ``_native_id`` backs the ``native_id`` property.
+        self._native_id = __threading__.get_native_id()
 
         g = getcurrent()
         gid = _get_ident(g)
@@ -254,18 +275,6 @@ class _DummyThread(_DummyThread_):
 
 
 
-def _after_fork_in_child():
-    # We've already imported threading, which installed its "after" hook,
-    # so we're going to be called after that hook.
-    # Note that this is only installed when monkey-patching.
-    # TODO: Is there any point to checking to see if the current thread is
-    # our dummy thread before doing this?
-    active = __threading__._active
-    assert len(active) == 1
-    main = __threading__._MainThread()
-    __threading__._active[__threading__.get_ident()] = main
-    __threading__._main_thread = main
-    assert main.ident == __threading__.get_ident()
 
 
 
@@ -285,6 +294,7 @@ def main_native_thread():
 
 class Thread(__threading__.Thread):
 
+    # Only happens in < 3.13
     def _set_tstate_lock(self):
         super(Thread, self)._set_tstate_lock()
         greenlet = getcurrent()
@@ -303,7 +313,10 @@ class Timer(Thread, __threading__.Timer): # pylint:disable=abstract-method,inher
 __implements__.append('Timer')
 
 _set_sentinel = allocate_lock
-__implements__.append('_set_sentinel')
+if sys.version_info[:2] < (3, 13):
+    __implements__.append('_set_sentinel')
+else:
+    __extensions__.append('_set_sentinel')
 # The main thread is patched up with more care
 # in _gevent_will_monkey_patch
 
@@ -325,6 +338,65 @@ if hasattr(__threading__, '_CRLock'):
     _CRLock = None
     __implements__.append('_CRLock')
 
+
+class _ForkHooks:
+
+    _before_fork_current_thread = None
+    _before_fork_active = None
+
+
+    def before_fork_in_parent(self):
+        self._before_fork_active = dict(__threading__._active)
+        self._before_fork_current_thread = __threading__.current_thread()
+
+    def after_fork_in_child(self):
+        # We've already imported threading, which installed its "after" hook,
+        # so we're going to be called after that hook.
+        # Note that this is only installed when monkey-patching.
+        # TODO: Is there any point to checking to see if the current thread is
+        # our dummy thread before doing this?
+        active = __threading__._active
+        assert len(active) == 1
+
+        # We cannot actually kill the greenlets via throw():
+        # - If it was the main greenlet, the process will exit
+        # - In any case, that would unwind the stack and execute
+        #   code that, before 2024-10-03, would never have executed.
+        #
+        # But we can take them out of the map and make them appear
+        # stopped; if they truly are no longer referenced, GC will
+        # kick in a nd delete the greenlet. If gevent is still waiting
+        # to switch to them, that will still happen...
+        #
+        # This happens automatically on <= 3.12 which hardcodes the call to
+        # ``Thread._stop``; for 3.13, we need to go through the handle.
+        current_ident = get_ident()
+        for green_ident, thread in self._before_fork_active.items():
+            if green_ident != current_ident:
+                try:
+                    handle = thread._handle
+                except AttributeError:
+                    assert sys.version_info[:2] < (3, 13)
+                    assert not thread.is_alive()
+                else:
+                    # We DO NOT want to bounce to the hub. We're running
+                    # at a very sensitive time and it's best to keep tight control
+                    # over what gets to run.
+                    handle._set_done(enter_hub=False)
+
+
+        main = __threading__._MainThread()
+        main._ident = get_ident() # 3.13: reset to the greenlet version.
+        __threading__._active[__threading__.get_ident()] = main
+        __threading__._main_thread = main
+
+        main = __threading__.main_thread()
+        # XXX: Not the case. Maybe don't save main.
+        assert main.ident == __threading__.get_ident()
+
+
+_fork_hooks = _ForkHooks()
+
 def _gevent_will_monkey_patch(native_module, items, warn): # pylint:disable=unused-argument
     # Make sure the MainThread can be found by our current greenlet ID,
     # otherwise we get a new DummyThread, which cannot be joined.
@@ -341,5 +413,9 @@ def _gevent_will_monkey_patch(native_module, items, warn): # pylint:disable=unus
         main_thread._ident = main_thread._Thread__ident = _get_ident()
         __threading__._active[_get_ident()] = main_thread
 
-    if _DummyThread._NEEDS_CLASS_FORK_FIXUP and hasattr(os, 'register_at_fork'):
-        os.register_at_fork(after_in_child=_after_fork_in_child)
+    register_at_fork = getattr(os, 'register_at_fork', None)
+    if register_at_fork:
+        #if _DummyThread._NEEDS_CLASS_FORK_FIXUP:
+        register_at_fork(
+            before=_fork_hooks.before_fork_in_parent,
+            after_in_child=_fork_hooks.after_fork_in_child)
