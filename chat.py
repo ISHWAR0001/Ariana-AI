@@ -1,5 +1,8 @@
 import eel
+import os 
 import google.generativeai as genai
+
+API_KEY = os.getenv("Google_Gemini_API_Key")
 
 chatstr = ""  # Store the conversation history
 
@@ -7,7 +10,7 @@ chatstr = ""  # Store the conversation history
 @eel.expose
 def handleUserQuery(user_query):
     global chatstr
-    genai.configure(api_key="AIzaSyABh2DLrMOweASZsDJfX_y8mZzYI2PcsxY")  # Replace with your actual API key
+    genai.configure(api_key = API_KEY)  # Replace with your actual API key
 
     # Append the user message to the chat history
     chatstr += f"{user_query}\n"

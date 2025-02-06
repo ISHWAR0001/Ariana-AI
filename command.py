@@ -5,16 +5,25 @@ import webbrowser
 import time
 import eel
 import sys
+import os
 import google.generativeai as genai
 from engine.auth import recognize
 from engine.auth import sample
 from engine.auth import trainer
 import threading
 
+API_KEY = os.getenv("Google_Gemini_API_Key")
+
+# Ensure the API key is available
+if API_KEY is None:
+    raise ValueError("Google_Gemini_API_Key environment variable is not set.")
+else:
+    print("Google Gemini API Key loaded successfully!")
+
 chatstr = ""
 def chat(text):
     global chatstr
-    genai.configure(api_key="AIzaSyABh2DLrMOweASZsDJfX_y8mZzYI2PcsxY")
+    genai.configure(api_key = API_KEY)
     chatstr += f"{text}\n"
 
     # Create the model
@@ -43,7 +52,7 @@ def chat(text):
     return response
 
 def ai(prompt):
-    genai.configure(api_key="AIzaSyABh2DLrMOweASZsDJfX_y8mZzYI2PcsxY")
+    genai.configure(api_key = API_KEY)
     word = f"Ariana Response For Prompt: {''.join(prompt.split('intelligence')[1:]).strip()}\n **********************\n\n"
 
     # Create the model

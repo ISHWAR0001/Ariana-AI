@@ -4,6 +4,9 @@ import time
 from command import *  
 from chat import *
 
+# Get environment variables for the current environment
+env_vars = os.environ.copy()
+
 # Start the Flask server from db.py using subprocess
 flask_process = subprocess.Popen(["python", "db.py"])
 

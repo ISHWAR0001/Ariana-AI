@@ -14,9 +14,16 @@ app.secret_key = "testing"
 @app.route('/')
 def login_signup():
    return render_template('login_signup.html')
+
+# Get MongoDB URI directly from environment variable (no need for load_dotenv here)
+mongo_uri = os.environ.get("MONGO_URI")  # Access the environment variable
+
+# Check if the MONGO_URI is set
+if not mongo_uri:
+    raise ValueError("MONGO_URI environment variable not set")
  
 # Connect to MongoDB
-client = MongoClient('mongodb+srv://Ishwar_Gupta:Ishwar123@cluster0.iupts.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+client = MongoClient(mongo_uri)
 db = client['Ariana']
 collection = db['User info']
 
