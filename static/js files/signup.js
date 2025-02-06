@@ -63,8 +63,8 @@ create_password.addEventListener('input', function() {
 
 confirm_password.addEventListener('input', function() {
     if (confirm_password.value == '') {
-        pass_icon2.style.display = 'inline';  // Show the eye icon
+        pass_icon3.style.display = 'inline';  // Show the eye icon
     } else {
-        pass_icon2.style.display = 'none';  // Hide the eye icon
+        pass_icon3.style.display = 'none';  // Hide the eye icon
     }
 });

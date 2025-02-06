@@ -76,7 +76,9 @@
             </div>
 
             <div class="input-box animation" style="--i: 2">
-              <span id="pass-icon1" class="icon"><i class="bi bi-lock-fill"></i></span>
+              <span id="pass-icon1" class="icon"
+                ><i class="bi bi-lock-fill"></i
+              ></span>
               <input type="password" id="login-pass" name="password" required />
               <label>Password</label>
             </div>
@@ -136,14 +138,28 @@
             </div>
 
             <div class="signup-input-box animation2" style="--j: 3">
-              <span class="icon"><i id="pass-icon2" class="bi bi-lock-fill"></i></span>
-              <input type="password" id="create-pass" name="password" required />
+              <span class="icon"
+                ><i id="pass-icon2" class="bi bi-lock-fill"></i
+              ></span>
+              <input
+                type="password"
+                id="create-pass"
+                name="password"
+                required
+              />
               <label for="password">Create Password</label>
             </div>
 
             <div class="signup-input-box animation2" style="--j: 4">
-              <span class="icon"><i id="pass-icon3" class="bi bi-lock-fill"></i></span>
-              <input type="password" id="confirm-pass" name="confirm-password" required />
+              <span class="icon"
+                ><i id="pass-icon3" class="bi bi-lock-fill"></i
+              ></span>
+              <input
+                type="password"
+                id="confirm-pass"
+                name="confirm-password"
+                required
+              />
               <label for="confirm-password">Confirm Password</label>
             </div>
           </div>
@@ -612,17 +628,34 @@
 
     <!-- Show Alert or error message on wrong login and signup details -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-      // Display SweetAlert with the error message if passed from Flask
+    <script type="text/javascript">
       window.onload = function () {
-        var errorMessage = "{{ error }}"; // Get the error message from Flask
+        var errorMessage = "{{ error }}"; // Error message from Flask
+        var successMessage = "{{ success }}"; // Success message from Flask
+
+        // Show error message if it exists
         if (errorMessage) {
           Swal.fire({
             icon: "error",
             title: "Oops...",
             text: errorMessage,
             confirmButtonText: "Try Again",
-            customClass: 'custom-swal', // Add custom class to the SweetAlert
+            customClass: "custom-swal",
+          });
+        }
+        // Show success message if it exists
+        else if (successMessage) {
+          Swal.fire({
+            icon: "success",
+            title: "Success!",
+            text: successMessage,
+            confirmButtonText: "Continue",
+            customClass: {
+              popup: "custom-popup", // Custom class for the popup (modal)
+              title: "custom-title", // Custom class for the title
+              content: "custom-content", // Custom class for the content (text)
+              confirmButton: "custom-button", // Custom class for the button
+            },
           });
         }
       };

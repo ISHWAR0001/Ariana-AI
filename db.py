@@ -20,30 +20,34 @@ client = MongoClient('mongodb+srv://Ishwar_Gupta:Ishwar123@cluster0.iupts.mongod
 db = client['Ariana']
 collection = db['User info']
 
-@app.route('/signup_form', methods=['GET','POST'])
+@app.route('/signup_form', methods=['GET', 'POST'])
 def submit():
     if request.method == 'POST':
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
         confirm_password = request.form['confirm-password']
+        
+        # Check if passwords match
         if password == confirm_password:
             password = generate_password_hash(password)
         else:
             return render_template('login_signup.html', error="Passwords do not match")
-
-        # Insert data into MongoDB
-        data = {
-            "username": username,
-            "email": email,
-            "password":password,
-        }
-            
-        existing_user = collection.find_one({'email':request.form['email']})
-        if existing_user is None :
+        
+        # Check if email already exists in the database
+        existing_user = collection.find_one({'email': email})
+        if existing_user is None:
+            # Insert new user data into MongoDB
+            data = {
+                "username": username,
+                "email": email,
+                "password": password,
+            }
             collection.insert_one(data)
             session['email'] = email
-            return render_template('login_signup.html')
+            
+            # Redirect to the signup page with a success message
+            return render_template('login_signup.html', success="You have signed up successfully!")
         else:
             return render_template('login_signup.html', error="Email already exists")
     
