@@ -45,7 +45,7 @@ $(document).ready(function () {
       // Only allow starting if running is False (meaning the main function was stopped)
       $("#oval").attr("hidden", true);
       $("#SiriWave").attr("hidden", false);
-      eel.ClickOnMicSound();
+      eel.ClickOnMicSound(); // Play the mic sound
       eel.run_main(); // Start the main function in a separate thread
       running = true; // Set running to true when the main function starts
     }

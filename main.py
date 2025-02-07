@@ -13,8 +13,8 @@ flask_process = subprocess.Popen(["python", "db.py"])
 # Wait for a few seconds to ensure the Flask server has started
 time.sleep(1)  # adjust this sleep time depending on server's startup time
 
-# Now open the UI in the browser (Flask UI on localhost:5000)
-os.system('start msedge "http://127.0.0.1:5000"')
-
 # Play sound after opening the UI
 ClickOnMicSound()
+
+# Now open the UI in the browser (Flask UI on localhost:5000)
+os.system('start msedge "http://127.0.0.1:5000"')

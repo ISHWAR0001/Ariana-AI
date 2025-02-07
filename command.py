@@ -79,12 +79,16 @@ def ai(prompt):
     speak("OK Sir")
     print(response.text)
     word += response.text
+    
+import logging
+logger = logging.getLogger(__name__)
 
 #playing sound function when we click on mic
 @eel.expose
 def ClickOnMicSound():
     music_dir = "static\\assets\\audio\\start_sound.mp3"
-    ps(music_dir, block=True)
+    logger.debug(f"Playing sound from: {music_dir}")
+    ps(music_dir, block=False)
     
 #playing assistant sound function
 @eel.expose
