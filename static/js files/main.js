@@ -140,7 +140,7 @@ $(document).ready(function () {
 
         // Show loading indicator
         const loadingMessage = $("<div>")
-          .addClass("message left")
+          .addClass("message left loading")
           .text("AI is typing...");
         messageContainer.append(loadingMessage);
         messageContainer.scrollTop(messageContainer[0].scrollHeight);

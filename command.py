@@ -17,8 +17,6 @@ API_KEY = os.getenv("Google_Gemini_API_Key")
 # Ensure the API key is available
 if API_KEY is None:
     raise ValueError("Google_Gemini_API_Key environment variable is not set.")
-else:
-    print("Google Gemini API Key loaded successfully!")
 
 chatstr = ""
 def chat(text):
@@ -80,15 +78,11 @@ def ai(prompt):
     print(response.text)
     word += response.text
     
-import logging
-logger = logging.getLogger(__name__)
-
 #playing sound function when we click on mic
 @eel.expose
 def ClickOnMicSound():
-    music_dir = "static\\assets\\audio\\start_sound.mp3"
-    logger.debug(f"Playing sound from: {music_dir}")
-    ps(music_dir, block=False)
+    music_dir = "static/assets/audio/start_sound.mp3"
+    ps(music_dir)
     
 #playing assistant sound function
 @eel.expose
