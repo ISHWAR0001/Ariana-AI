@@ -4,6 +4,9 @@ import time
 from command import *  
 from chat import *
 
+# Remove DISPLAY variable if it exists (avoiding KeyError)
+os.environ.pop("DISPLAY", None)
+    
 # Get environment variables for the current environment
 env_vars = os.environ.copy()
 

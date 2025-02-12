@@ -82,7 +82,11 @@ def ai(prompt):
 @eel.expose
 def ClickOnMicSound():
     music_dir = "static/assets/audio/start_sound.mp3"
-    ps(music_dir)
+    try:
+        ps(music_dir)  # Playsound or audio-related function
+    except Exception as e:
+        print("Audio playback is not available:", e)
+
     
 #playing assistant sound function
 @eel.expose
@@ -149,7 +153,7 @@ def takecommand():
 
     #Directly import pyaudio if available
     try:
-        import pyaudio
+        pass
     except ImportError:
         print("pyAudio is required for microphone functionality")
         return None

@@ -1,23 +1,51 @@
-# Use a base Python image
-FROM python:3.11-slim
+FROM python:3.11
 
-# Set the working directory inside the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the requirements.txt file to the container
-COPY requirements.txt .
-
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the project into the container
+# Copy the application files
 COPY . .
 
-# Set the environment variable to indicate the app should run in production
-ENV FLASK_ENV=production
+# Install system dependencies (Including PyAudio dependencies)
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    x11-xserver-utils \
+    xauth \
+    xvfb \
+    dbus \
+    dbus-x11 \
+    libglib2.0-dev \
+    gir1.2-gtk-3.0 \
+    gir1.2-gdkpixbuf-2.0 \
+    python3-gi \
+    python3-gi-cairo \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-alsa \
+    gstreamer1.0-libav \
+    gstreamer1.0-tools \
+    gstreamer1.0-pulseaudio \
+    alsa-utils \
+    mesa-utils \
+    libgtk-3-dev \
+    portaudio19-dev \
+    libasound2-dev \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*  # Cleanup to reduce image size
 
-# Expose the port your app will run on (e.g., 5000 for Flask)
-EXPOSE 5000
+# Upgrade pip before installing requirements
+RUN pip install --no-cache-dir --upgrade pip
 
-# Command to run the application
-CMD ["gunicorn", "-w", "4", "app:app"]
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Set the environment variable for X display
+ENV DISPLAY=:99
+ENV PULSE_SERVER=unix:/run/pulse/native
+
+# Copy and set entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Run the entrypoint script
+CMD ["/entrypoint.sh"]

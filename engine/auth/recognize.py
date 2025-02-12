@@ -1,7 +1,14 @@
 from sys import flags
 import time
-import pyautogui as p
 import cv2
+
+import os
+os.environ["DISPLAY"] = ":99"  # Force setting DISPLAY for Python
+
+import pyautogui as p
+
+# Disable FAILSAFE to avoid cursor issues
+p.FAILSAFE = False
 
 def AuthenticateFace():
     flag = ""
