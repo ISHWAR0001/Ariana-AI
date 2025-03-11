@@ -35,3 +35,5 @@ def trainFaceSamples():
     recocgnizer.write('engine\\auth\\trainer\\trainer.yml')
 
     print("Model Trained, Now We Cam Recognize Your Face.")
+    
+# trainFaceSamples()

@@ -20,4 +20,4 @@ time.sleep(1)  # adjust this sleep time depending on server's startup time
 ClickOnMicSound()
 
 # Now open the UI in the browser (Flask UI on localhost:5000)
-os.system('start msedge "http://127.0.0.1:5000"')
+os.system('start msedge "http://127.0.0.1:5000"') 

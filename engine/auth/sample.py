@@ -47,3 +47,5 @@ def TakeFaceSample():
     print("Samples taken now closing the program....")
     cam.release()
     cv2.destroyAllWindows()
+    
+TakeFaceSample()

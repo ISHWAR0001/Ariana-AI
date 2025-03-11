@@ -82,3 +82,5 @@ def AuthenticateFace():
     cam.release()
     cv2.destroyAllWindows() 
     return flag
+
+# AuthenticateFace()
