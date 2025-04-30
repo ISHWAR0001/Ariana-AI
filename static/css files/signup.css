@@ -1,0 +1,192 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+.signup-box {
+    position: relative;
+    width: 400px;
+    height: 75vh;
+    left: 10vh;
+    bottom: -20px;
+    background: url('./image/login-bg1.avif') no-repeat;
+    background-size: cover;
+    background-position: center;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: translateX(-100%);
+}
+
+.animation2 {
+    transform: translateX(130%);
+}
+
+.signup-h2 {
+    position: relative;
+    font-size: 2em;
+    color: #fff;
+    text-align: center;
+    top: -10px;
+}
+
+.signup-inputbox {
+    position: relative;
+    top: 10px;
+}
+
+.signup-input-box {
+    position: relative;
+    width: 310px;
+    margin: 20px 0 0px 0;
+    border-bottom: 2px solid #fff;
+    top: -20px;
+}
+
+.signup-input-box label {
+    position: absolute;
+    top: 50%;
+    left: 5px;
+    transform: translateY(-20%);
+    font-size: 1em;
+    color: #fff;
+    pointer-events: none;
+}
+
+.signup-input-box input:valid~label,
+.signup-input-box input:hover~label {
+    top: -5px;
+}
+
+.signup-input-box input {
+    width: 100%;
+    height: 50px;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1em;
+    color: #fff;
+    padding: 0 8px 0 5px;
+}
+
+.signup-input-box .icon {
+    position: absolute;
+    right: 8px;
+    color: #fff;
+    font-size: 1.2em;
+    line-height: 57px;
+}
+
+.signup-p {
+    display: inline;
+    position: relative;
+    font-size: 1.1em;
+    color: #fff;
+    text-align: center;
+    margin: 10px 0 10px 0;
+    padding: 0px 0 0px 0;
+}
+
+#sampleface {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 30px;
+    height: 30px;
+    border-radius: 20px;
+    right: -5px;
+    font-size: 20px;
+    color: #000;
+    background-color: white;
+}
+
+#sampleface:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.term-condition {
+    position: relative;
+    top: 20px;
+    left: -10px;
+    margin: 20px 0 20px 0;
+    font-size: 1em;
+    color: #fff;
+    display: flex;
+    justify-content: space-around;
+}
+
+#checkMark {
+    position: relative;
+    left: 5px;
+    margin: 3px;
+}
+
+.term-condition input:hover {
+    cursor: pointer;
+    color: blue;
+}
+
+#registerBtn {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    background: #fff;
+    border: none;
+    outline: none;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 1em;
+    color: #000;
+    font-weight: 500;
+    bottom: -15px;
+}
+
+#registerBtn:hover {
+    background: #000;
+    color: #fff;
+}
+
+.login-link {
+    font-size: .9em;
+    color: #fff;
+    text-align: center;
+    margin: 40px 0 0px 0;
+}
+
+.login-link p a {
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+    padding-left: 5px;
+}
+
+.login-link p a:hover {
+    text-decoration: underline;
+    color: blue;
+}
+
+#login .signup-box.deactive .animation2 {
+    transform: translateX(130%);
+    visibility: hidden;
+    transition: .5s ease;
+    filter: blur(10px);
+    transition-delay: calc(.1s * var(--j));
+}
+
+#login .signup-box.deactive {
+    transition-delay: .5s;
+    visibility: hidden;
+}
+
+#login .login-box.active {
+    transition-delay: .5s;
+    visibility: visible;
+}
+
+#login .login-box.active .animation {
+    transform: translateX(0);
+    filter: blur(0px);
+    transition: .5s ease;
+    visibility: visible;
+    transition-delay: calc(.1s * var(--i));
+}
