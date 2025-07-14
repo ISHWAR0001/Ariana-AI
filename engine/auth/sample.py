@@ -48,4 +48,4 @@ def TakeFaceSample():
     cam.release()
     cv2.destroyAllWindows()
     
-# TakeFaceSample()
+TakeFaceSample()
